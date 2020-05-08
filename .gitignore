@@ -38,3 +38,4 @@ cabal.project.local~
 .history
 
 # End of https://www.gitignore.io/api/haskell,visualstudiocode
+my-project.cabal
