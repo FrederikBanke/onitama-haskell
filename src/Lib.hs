@@ -47,10 +47,3 @@ hasWinningStrategy _ _ = return "Not yet implemented"
 
 makeMove :: Position -> Position -> Card -> Position
 makeMove _ _ _ = Position 1 1
-
-
--- Shuffle a deck of cards
-shuffleCards :: IO [Card]
-shuffleCards = do
-    g <- newStdGen -- Generate a new random generator
-    return $ take 5 . nub $ (randomRs (Boar, Tiger) g) -- Makes a random range and filters duplicates and takes 5 elements from the resulting list
