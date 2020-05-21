@@ -11,6 +11,7 @@ import           System.Random
 import           Data.List
 import           Cards
 import           Moving
+import           Helper
 
 type Game = (State, Moves)
 
@@ -71,9 +72,9 @@ playGame (initState, moves) = unPack $ checkMoves (Just initState) moves 0 -- Re
 
 -- Recursively makes the moves.
 checkMoves :: Maybe State -> Moves -> Int -> Maybe String
-checkMoves (Just s) [] _ = Just $ show s
-checkMoves (Just s) (m:ms) n = checkMoves (move s m) ms (n+1)
-checkMoves Nothing _ n = Just $ "NonValid " ++ show n
+checkMoves (Just s) []       _ = Just $ show s
+checkMoves (Just s) (m : ms) n = checkMoves (move s m) ms (n + 1)
+checkMoves Nothing  _        n = Just $ "NonValid " ++ show n
 
 
 isInitStateValid :: State -> Bool
@@ -89,13 +90,3 @@ noOverlap pieces = (== length pieces) $ length $ nub pieces
 -- Checks if given cards are part of the valid cards for the game
 isValidCards :: [Card] -> Bool
 isValidCards = foldl (\acc x -> (x `elem` validCards) && acc) True
-
-
--- Take value out of Maybe.
-unPack :: Maybe a -> a
-unpack Nothing = 0
-unPack (Just a) = a
-
-isRight :: Either a b -> Bool
-isRight (Left  _) = False
-isRight (Right _) = True

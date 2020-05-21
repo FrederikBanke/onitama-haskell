@@ -14,6 +14,7 @@ import           Control.Monad
 import           System.Random
 import           Data.List
 import           Cards
+import           Helper
 
 type State = (Cards, Pieces, Pieces)
 
@@ -31,18 +32,19 @@ debugState = (["Not a card"], [(0, 0)], [(0, 0)]) :: State
 -- Make a move. Takes a state and a move to be applied to the state. Returns the new state.
 -- 
 move :: State -> Move -> Maybe State
-move curState@(cards, pA, pB) move
+move curState@(cards, pA, pB) m@(_,_,c) 
     |
         -- Check if a piece should be removed after the move is taken
-      validMove move = Just $ flipBoard $ checkRemove (cards, movePiece pA move, pB)
-    | otherwise      = Nothing
+      validMove m = Just $ flipBoard $ checkRemove
+        (switchCards cards c , movePiece pA m, pB)
+    | otherwise = Nothing
 
 -- Remove overlapping pieces
 checkRemove :: State -> State
 checkRemove (cards, pA, pB) = (cards, pA, [ x | x <- pB, x `notElem` pA ]) -- Filter elements
 
 movePiece :: Pieces -> Move -> Pieces
-movePiece p (start, end, _) = map (\x -> if x==start then end else x) p -- Move element if it is equal to the start position. TODO: Maybe sort here
+movePiece p (start, end, _) = map (\x -> if x == start then end else x) p -- Move element if it is equal to the start position. TODO: Maybe sort here
 
 -- Compare a move with every moveset for a card
 validMove :: Move -> Bool

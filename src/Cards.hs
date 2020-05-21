@@ -4,6 +4,7 @@ module Cards
     , validCards
     , getMoveSet
     , shuffleCards
+    , switchCards
     )
 where
 
@@ -11,6 +12,7 @@ import           System.IO
 import           Control.Monad
 import           System.Random
 import           Data.List
+import           Helper
 
 -- Make a type synonym for a card.
 type Card = String
@@ -61,3 +63,12 @@ shuffleCards = do
     g <- newStdGen -- Generate a new random generator
     let indexes = take 5 . nub $ randomRs (0, 15) g -- Makes a random range and filters duplicates and takes 5 elements from the resulting list
     return (map (validCards !!) indexes)
+
+-- Switch cards when used
+switchCards :: Cards -> Card -> Cards
+switchCards cs@[c1, c2, c3, c4, c5] c
+    | c == c1   = [c5 , c2 , c3 , c4 , c1]
+    | c == c2   = [c1 , c5 , c3 , c4 , c2]
+    | c == c3   = [c1 , c2 , c5 , c4 , c3]
+    | c == c4   = [c1 , c2 , c3 , c5 , c4]
+    | otherwise = cs
