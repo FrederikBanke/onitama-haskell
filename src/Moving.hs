@@ -65,7 +65,10 @@ isWinningMove :: Bool
 isWinningMove = False
 
 flipBoard :: State -> State
-flipBoard (cards, pA, pB) = (cards, flipPieces pB, flipPieces pA)
+flipBoard (cards, pA, pB) = (cards, head pBf : sort (tail pBf), head pAf : sort (tail pAf))
+    where   pAf = flipPieces pA
+            pBf = flipPieces pB
+    
 
 flipPieces :: Pieces -> Pieces
 flipPieces = map (\(x, y) -> (4 - x, 4 - y))
