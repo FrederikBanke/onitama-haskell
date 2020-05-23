@@ -31,12 +31,17 @@ debugState = (["Not a card"], [(0, 0)], [(0, 0)]) :: State
 
 -- Make a move. Takes a state and a move to be applied to the state. Returns the new state.
 -- 
-move :: State -> Move -> Maybe State
-move curState@(cards, pA, pB) m@(_,_,c) 
-    |
-        -- Check if a piece should be removed after the move is taken
-      validMove m = Just $ flipBoard $ checkRemove
-        (switchCards cards c , movePiece pA m, pB)
+-- Check if a piece should be removed after the move is taken
+move :: State -> Move -> Maybe (Either State State)
+move curState@(cards, pA, pB) m@(start, end, c)
+    | validMove m = case () of -- Nested if statements
+        ()
+            | isWinningMove (head pA) (head pB) start end
+            -> Just $ Right $ flipBoard $ checkRemove
+                (switchCards cards c, movePiece pA m, pB)
+            | otherwise
+            -> Just $ Left $ flipBoard $ checkRemove
+                (switchCards cards c, movePiece pA m, pB)
     | otherwise = Nothing
 
 -- Remove overlapping pieces
@@ -61,14 +66,18 @@ isWithinBoard (x, y) = all (\a -> (a < 5) && (a >= 0)) [x, y]
 
 -- Checks if a move is the winning move
 -- TODO: Mangler at lave
-isWinningMove :: Bool
-isWinningMove = False
+isWinningMove :: Position -> Position -> Position -> Position -> Bool
+isWinningMove mA mB start end@(x, _) | mB == end             = True-- Won by Way of the Stone
+                                     | start == mA && x == 4 = True-- Won by Way of the Stream
+                                     | otherwise = False 
 
 flipBoard :: State -> State
-flipBoard (cards, pA, pB) = (cards, head pBf : sort (tail pBf), head pAf : sort (tail pAf))
-    where   pAf = flipPieces pA
-            pBf = flipPieces pB
-    
+flipBoard (cards, pA, pB) =
+    (cards, head pBf : sort (tail pBf), head pAf : sort (tail pAf))
+  where
+    pAf = flipPieces pA
+    pBf = flipPieces pB
+
 
 flipPieces :: Pieces -> Pieces
 flipPieces = map (\(x, y) -> (4 - x, 4 - y))

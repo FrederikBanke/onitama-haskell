@@ -13,6 +13,12 @@ import           Cards
 import           Moving
 import           Helper
 
+
+-- Checklist:
+-- TODO: Check om man har taget Master piece med sit move
+-- TODO: Check om man har noget den anden spillers side
+-- TODO: Lav tests
+
 type Game = (State, Moves)
 
 initialState :: IO State
@@ -66,17 +72,24 @@ parseGame (x : xs) = (read x, map read xs)
 -- Play a game. Will return the final state of the game as a string
 -- Will return the move that was not valid as a string if there is one.
 playGame :: Game -> String
-playGame (initState, []   ) = show debugState -- FIXME: Skift ud med initState når jeg er færdig
+playGame (initState, []) = show debugState -- FIXME: Skift ud med initState når jeg er færdig
 -- Go through and make each move.
-playGame (initState, moves) = unPack $ checkMoves (Just initState) moves 0 -- Returns the final state
+playGame (initState, moves) =
+    unPack $ checkMoves (Just $ Left initState) moves 0 -- Returns the final state
 
 -- Recursively makes the moves.
-checkMoves :: Maybe State -> Moves -> Int -> Maybe String
-checkMoves (Just s) []       _ = Just $ show s
-checkMoves (Just s) (m : ms) n = checkMoves (move s m) ms (n + 1)
-checkMoves Nothing  _        n = Just $ "NonValid " ++ show n
+-- Nothing: A nonvalid move was made.
+-- Left: A normal move was made.
+-- Right: A winning move was made.
+checkMoves :: Maybe (Either State State) -> Moves -> Int -> Maybe String
+checkMoves (Just (Left  s)) []       _ = Just $ "No winning move " ++ show s
+checkMoves (Just (Right s)) []       _ = Just $ "Winning move " ++ show s
 
+checkMoves (Just (Left  s)) (m : ms) n = checkMoves (move s m) ms (n + 1)
+checkMoves (Just (Right s)) (m : ms) n = Just $ "Moves after winning move " ++ show n
+checkMoves Nothing          _        n = Just $ "NonValid " ++ show n
 
+-- TODO: Not done
 isInitStateValid :: State -> Bool
 isInitStateValid (cards, piecesA, piecesB) =
     isValidCards cards && noOverlap (piecesA ++ piecesB)
