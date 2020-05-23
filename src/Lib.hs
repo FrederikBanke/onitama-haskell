@@ -6,6 +6,7 @@ module Lib
 where
 
 import           System.IO
+import           Text.Read
 import           Control.Monad
 import           System.Random
 import           Data.List
@@ -15,8 +16,9 @@ import           Helper
 
 
 -- Checklist:
--- TODO: Check om man har taget Master piece med sit move
--- TODO: Check om man har noget den anden spillers side
+-- TODO: Check om initial state er invalid
+-- TODO: Check om det kort der bliver brugt er et af de 5 valgte, og om det er et spilleren har
+-- TODO: Check om det første move er et winning move. Giver altid Left, måske det skal være Right?
 -- TODO: Lav tests
 
 type Game = (State, Moves)
@@ -51,11 +53,11 @@ isValid :: FilePath -> IO (String)
 isValid path = do
     handle   <- openFile path ReadMode
     contents <- hGetContents handle
-    -- mapM_ putStrLn $ lines contents -- #FIXME: Debugging
-    if isInitStateValid $ read $ head $ lines contents -- Check if initial state is valid
+    if isInitStateValid $ readMaybe $ head $ lines contents -- Check if initial state is valid
         then return $ playGame $ parseGame $ lines contents
         -- ParsingError if not valid format
         else return "ParsingError"
+    -- mapM_ putStrLn $ lines contents -- #FIXME: Debugging
 
 -- Can there be a winning strategy withing n moves.
 hasWinningStrategy :: Int -> FilePath -> IO (String)
@@ -86,14 +88,17 @@ checkMoves (Just (Left  s)) []       _ = Just $ "No winning move " ++ show s
 checkMoves (Just (Right s)) []       _ = Just $ "Winning move " ++ show s
 
 checkMoves (Just (Left  s)) (m : ms) n = checkMoves (move s m) ms (n + 1)
-checkMoves (Just (Right s)) (m : ms) n = Just $ "Moves after winning move " ++ show n
-checkMoves Nothing          _        n = Just $ "NonValid " ++ show n
+checkMoves (Just (Right s)) (m : ms) n =
+    Just $ "Moves after winning move " ++ show n
+checkMoves Nothing _ n = Just $ "NonValid " ++ show n
 
 -- TODO: Not done
-isInitStateValid :: State -> Bool
-isInitStateValid (cards, piecesA, piecesB) =
-    isValidCards cards && noOverlap (piecesA ++ piecesB)
-isInitStateValid _ = False
+isInitStateValid :: Maybe State -> Bool
+isInitStateValid (Just (cards, piecesA, piecesB)) =
+    isValidCards cards && noOverlap (piecesA ++ piecesB) && all
+        isWithinBoard
+        (piecesA ++ piecesB)
+isInitStateValid Nothing = False
 
 -- Makes a new list with no duplicates.
 -- Then checks if the length is the same.

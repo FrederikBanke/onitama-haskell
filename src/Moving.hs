@@ -5,6 +5,7 @@ module Moving
     , Pieces
     , State
     , move
+    , isWithinBoard
     , debugState -- FIXME: Remove
     )
 where
@@ -65,7 +66,6 @@ isWithinBoard :: Position -> Bool
 isWithinBoard (x, y) = all (\a -> (a < 5) && (a >= 0)) [x, y]
 
 -- Checks if a move is the winning move
--- TODO: Mangler at lave
 isWinningMove :: Position -> Position -> Position -> Position -> Bool
 isWinningMove mA mB start end@(x, _) | mB == end             = True-- Won by Way of the Stone
                                      | start == mA && x == 4 = True-- Won by Way of the Stream
