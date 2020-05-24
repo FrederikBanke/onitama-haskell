@@ -40,20 +40,20 @@ move curState@(cards@[c1, c2, _,_,_], pA, pB) m@(start, end, c) pot@True
     | validMove [c1, c2] m = case () of -- Nested if statements
         ()
             | isWinningMove (head pA) (head pB) start end
-            -> Just $ Right $ flipBoard (switchCards cards c, movePiece pA m, [])
+            -> Just $ Right $ flipBoard (sortCards (switchCards cards c), movePiece pA m, [])
             | otherwise
             -> Just $ Left $ flipBoard $ checkRemove
-                (switchCards cards c, movePiece pA m, pB) pot
+                (sortCards (switchCards cards c), movePiece pA m, pB) pot
     | otherwise = Nothing
 
 move curState@(cards@[_, _, c3,c4,_], pA, pB) m@(start, end, c) pot@False
     | validMove [c3,c4] m = case () of -- Nested if statements
         ()
             | isWinningMove (head pB) (head pA) start end
-            -> Just $ Right $ flipBoard (switchCards cards c, [], movePiece pB m)
+            -> Just $ Right $ flipBoard (sortCards (switchCards cards c), [], movePiece pB m)
             | otherwise
             -> Just $ Left $ flipBoard $ checkRemove
-                (switchCards cards c, pA, movePiece pB m) pot
+                (sortCards (switchCards cards c), pA, movePiece pB m) pot
     | otherwise = Nothing
 
 -- Remove overlapping pieces
@@ -70,7 +70,6 @@ movePiece p (start, end, _) = map (\x -> if x == start then end else x) p -- Mov
 validMove :: Cards -> Move -> Bool
 validMove cs move@(start, end, card) = isPlayerCard cs card && isCardMove move && isWithinBoard end
 
--- TODO: Lav den her
 isPlayerCard :: Cards -> Card -> Bool
 isPlayerCard cs c = c `elem` cs
 

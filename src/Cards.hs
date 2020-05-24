@@ -5,6 +5,7 @@ module Cards
     , getMoveSet
     , shuffleCards
     , switchCards
+    , sortCards
     )
 where
 
@@ -71,3 +72,7 @@ switchCards cs@[c1, c2, c3, c4, c5] c
     | c == c2   = [c1 , c5 , c3 , c4 , c2]
     | c == c3   = [c1 , c2 , c5 , c4 , c3]
     | c == c4   = [c1 , c2 , c3 , c5 , c4]
+
+sortCards :: Cards -> Cards
+sortCards [c1, c2, c3, c4, c5] = concat [sortPlayerCards c1 c2, sortPlayerCards c3 c4, [c5]]
+    where sortPlayerCards ca cb = if ca < cb then [ca, cb] else [cb, ca]

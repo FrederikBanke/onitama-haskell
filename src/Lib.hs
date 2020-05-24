@@ -16,9 +16,6 @@ import           Helper
 
 
 -- Checklist:
--- TODO: Sort cards.
--- TODO: Skal ikke bytte om på pieces A og B. Skal holde styr på tur med et argument.
--- TODO: Check om det kort der bliver brugt er et af de 5 valgte, og om det er et spilleren har
 -- TODO: Check om det første move er et winning move. Giver altid Left, måske det skal være Right?
 -- TODO: Lav tests
 
