@@ -16,7 +16,8 @@ import           Helper
 
 
 -- Checklist:
--- TODO: Check om initial state er invalid
+-- TODO: Sort cards.
+-- TODO: Skal ikke bytte om på pieces A og B. Skal holde styr på tur med et argument.
 -- TODO: Check om det kort der bliver brugt er et af de 5 valgte, og om det er et spilleren har
 -- TODO: Check om det første move er et winning move. Giver altid Left, måske det skal være Right?
 -- TODO: Lav tests
@@ -74,25 +75,29 @@ parseGame (x : xs) = (read x, map read xs)
 -- Play a game. Will return the final state of the game as a string
 -- Will return the move that was not valid as a string if there is one.
 playGame :: Game -> String
-playGame (initState, []) = show debugState -- FIXME: Skift ud med initState når jeg er færdig
+playGame (initState, []) = "ParsingError" -- If no moves, not a valid game.
 -- Go through and make each move.
 playGame (initState, moves) =
-    unPack $ checkMoves (Just $ Left initState) moves 0 -- Returns the final state
+    unPack $ checkMoves (Just $ Left initState) moves 0 True -- Returns the final state
 
 -- Recursively makes the moves.
 -- Nothing: A nonvalid move was made.
 -- Left: A normal move was made.
 -- Right: A winning move was made.
-checkMoves :: Maybe (Either State State) -> Moves -> Int -> Maybe String
-checkMoves (Just (Left  s)) []       _ = Just $ "No winning move " ++ show s
-checkMoves (Just (Right s)) []       _ = Just $ "Winning move " ++ show s
-
-checkMoves (Just (Left  s)) (m : ms) n = checkMoves (move s m) ms (n + 1)
-checkMoves (Just (Right s)) (m : ms) n =
+checkMoves
+    :: Maybe (Either State State)
+    -> Moves
+    -> Int
+    -> PlayerOneTurn
+    -> Maybe String
+checkMoves (Just (Left  s)) []       _ _   = Just $ "No winning move " ++ show s
+checkMoves (Just (Right s)) []       _ _   = Just $ "Winning move " ++ show s
+checkMoves (Just (Left  s)) (m : ms) n pot = checkMoves (move s m pot) ms (n + 1) (not pot)
+checkMoves (Just (Right s)) (m : ms) n _ =
     Just $ "Moves after winning move " ++ show n
-checkMoves Nothing _ n = Just $ "NonValid " ++ show n
+checkMoves Nothing _ n _ = Just $ "NonValid " ++ show n
 
--- TODO: Not done
+-- Check if initial game state is valid.
 isInitStateValid :: Maybe State -> Bool
 isInitStateValid (Just (cards, piecesA, piecesB)) =
     isValidCards cards && noOverlap (piecesA ++ piecesB) && all

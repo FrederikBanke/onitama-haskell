@@ -71,4 +71,3 @@ switchCards cs@[c1, c2, c3, c4, c5] c
     | c == c2   = [c1 , c5 , c3 , c4 , c2]
     | c == c3   = [c1 , c2 , c5 , c4 , c3]
     | c == c4   = [c1 , c2 , c3 , c5 , c4]
-    | otherwise = cs
