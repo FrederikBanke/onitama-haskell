@@ -3,7 +3,7 @@ module Cards
     , Cards
     , validCards
     , getMoveSet
-    , shuffleCards
+    , shuffleDeck
     , switchCards
     , sortCards
     )
@@ -59,10 +59,10 @@ getMoveSet name | name == "Boar"     = [(0, -1), (1, 0), (0, 1)]
                 | otherwise          = []
 
 -- Shuffle a deck of cards
-shuffleCards :: IO [Card]
-shuffleCards = do
-    g <- newStdGen -- Generate a new random generator
-    let indexes = take 5 . nub $ randomRs (0, 15) g -- Makes a random range and filters duplicates and takes 5 elements from the resulting list
+shuffleDeck :: StdGen -> IO [Card]
+shuffleDeck g = do
+    -- g <- newStdGen -- Generate a new random generator
+    let indexes = randomRange g 5 15 -- Makes a random range and filters duplicates and takes 5 elements from the resulting list
     return (map (validCards !!) indexes)
 
 -- Switch cards when used

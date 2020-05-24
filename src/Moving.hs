@@ -3,11 +3,12 @@ module Moving
     , Move
     , Position
     , Pieces
+    , Piece
     , State
     , PlayerOneTurn
     , move
     , isWithinBoard
-    , debugState -- FIXME: Remove
+    , validMove
     )
 where
 
@@ -20,18 +21,17 @@ import           Helper
 
 type State = (Cards, Pieces, Pieces)
 
-type Pieces = [Position]
+type Pieces = [Piece]
 
 type Moves = [Move]
 
 type Move = (Position, Position, Card)
 
+type Piece = (Int, Int)
+
 type Position = (Int, Int)
 
 type PlayerOneTurn = Bool
-
-debugState = (["Not a card"], [(0, 0)], [(0, 0)]) :: State
-
 
 -- Make a move. Takes a state and a move to be applied to the state. Returns the new state.
 -- Check if a piece should be removed after the move is taken
@@ -83,7 +83,7 @@ isWithinBoard :: Position -> Bool
 isWithinBoard (x, y) = all (\a -> (a < 5) && (a >= 0)) [x, y]
 
 -- Checks if a move is the winning move
-isWinningMove :: Position -> Position -> Position -> Position -> Bool
+isWinningMove :: Piece -> Piece -> Position -> Position -> Bool
 isWinningMove mA mB start end@(x, _) | mB == end             = True-- Won by Way of the Stone
                                      | start == mA && x == 4 = True-- Won by Way of the Stream
                                      | otherwise = False 

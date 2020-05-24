@@ -13,6 +13,7 @@ import           Data.List
 import           Cards
 import           Moving
 import           Helper
+import           RandomGame
 
 
 -- Checklist:
@@ -21,28 +22,17 @@ import           Helper
 
 type Game = (State, Moves)
 
-initialState :: IO State
-initialState = do
-    cards <- shuffleCards
-    return
-        ( cards
-        , [(0, 2), (0, 0), (0, 1), (0, 3), (0, 4)]
-        , [(4, 2), (4, 0), (4, 1), (4, 3), (4, 4)]
-        )
-
-
 -- Takes an integer seed, an integer n, and outputs a string representing a game with n moves computed randomly.
 generateRandom :: Int -> Int -> IO (String)
--- generateRandom rGen _ = do
+generateRandom seed n = do
 -- initialize random generator with seed
 -- Make random move with generator
--- generateRandom seed n = randoms (Cobra,Monkey) (mkStdGen seed) -- 
-
+    initState <- initialState . mkStdGen $ seed
+    makeRandomMove (mkStdGen seed) initState True n (show initState)
 -- Should ouput format:
 -- (Cards, PiecesA, PiecesB)    // The intial state of the board
 -- (Start, End, Card)           // A move, the rest of the lines will also be moves
 -- Output string representing a game with n moves computed randomly
-generateRandom _ _ = return "Not yet implemented"
 
 
 -- Is the game valid
@@ -55,7 +45,6 @@ isValid path = do
         then return $ playGame $ parseGame $ lines contents
         -- ParsingError if not valid format
         else return "ParsingError"
-    -- mapM_ putStrLn $ lines contents -- #FIXME: Debugging
 
 -- Can there be a winning strategy withing n moves.
 hasWinningStrategy :: Int -> FilePath -> IO (String)
@@ -87,11 +76,12 @@ checkMoves
     -> Int
     -> PlayerOneTurn
     -> Maybe String
-checkMoves (Just (Left  s)) []       _ _   = Just $ "No winning move " ++ show s
-checkMoves (Just (Right s)) []       _ _   = Just $ "Winning move " ++ show s
-checkMoves (Just (Left  s)) (m : ms) n pot = checkMoves (move s m pot) ms (n + 1) (not pot)
+checkMoves (Just (Left  s)) [] _ _ = Just $ show s
+checkMoves (Just (Right s)) [] _ _ = Just $ show s
+checkMoves (Just (Left s)) (m : ms) n pot =
+    checkMoves (move s m pot) ms (n + 1) (not pot)
 checkMoves (Just (Right s)) (m : ms) n _ =
-    Just $ "Moves after winning move " ++ show n
+    Just $ "NonValid " ++ show n
 checkMoves Nothing _ n _ = Just $ "NonValid " ++ show n
 
 -- Check if initial game state is valid.
