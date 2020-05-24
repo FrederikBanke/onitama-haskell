@@ -28,7 +28,7 @@ generateRandom seed n = do
 -- initialize random generator with seed
 -- Make random move with generator
     initState <- initialState . mkStdGen $ seed
-    makeRandomMove (mkStdGen seed) initState True n (show initState)
+    makeRandomMove (mkStdGen seed) initState n (show initState)
 -- Should ouput format:
 -- (Cards, PiecesA, PiecesB)    // The intial state of the board
 -- (Start, End, Card)           // A move, the rest of the lines will also be moves
@@ -64,25 +64,18 @@ playGame :: Game -> String
 playGame (initState, []) = "ParsingError" -- If no moves, not a valid game.
 -- Go through and make each move.
 playGame (initState, moves) =
-    unPack $ checkMoves (Just $ Left initState) moves 0 True -- Returns the final state
+    unPack $ checkMoves (Just $ Left initState) moves (head moves) -- Returns the final state
 
 -- Recursively makes the moves.
 -- Nothing: A nonvalid move was made.
 -- Left: A normal move was made.
 -- Right: A winning move was made.
-checkMoves
-    :: Maybe (Either State State)
-    -> Moves
-    -> Int
-    -> PlayerOneTurn
-    -> Maybe String
-checkMoves (Just (Left  s)) [] _ _ = Just $ show s
-checkMoves (Just (Right s)) [] _ _ = Just $ show s
-checkMoves (Just (Left s)) (m : ms) n pot =
-    checkMoves (move s m pot) ms (n + 1) (not pot)
-checkMoves (Just (Right s)) (m : ms) n _ =
-    Just $ "NonValid " ++ show n
-checkMoves Nothing _ n _ = Just $ "NonValid " ++ show n
+checkMoves :: Maybe (Either State State) -> Moves -> Move -> Maybe String
+checkMoves (Just (Left  s)) []       _  = Just $ show s -- Non winning move
+checkMoves (Just (Right s)) []       _  = Just $ show s -- Winning move
+checkMoves (Just (Left  s)) (m : ms) _  = checkMoves (move s m) ms m -- Normal move
+checkMoves (Just (Right s)) (m : _ ) _  = Just $ "NonValid " ++ show m -- Moves after win
+checkMoves Nothing          _        lm = Just $ "NonValid " ++ show lm -- Invalid move
 
 -- Check if initial game state is valid.
 isInitStateValid :: Maybe State -> Bool

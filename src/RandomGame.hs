@@ -23,23 +23,20 @@ initialState rGen = do
         , [(4, 2), (4, 0), (4, 1), (4, 3), (4, 4)]
         )
 
-makeRandomMove :: StdGen -> State -> PlayerOneTurn -> Int -> String -> IO String
-makeRandomMove rGen s@(cs@[c1, c2, c3, c4, _], pA, pB) pot n gameString = do
-    let playerPieces = if pot then pA else pB
-    let playerCards  = if pot then [c1, c2] else [c3, c4]
-    let ps           = shufflePieces rGen playerPieces
-    let pc           = shuffleCards rGen playerCards
+makeRandomMove :: StdGen -> State -> Int -> String -> IO String
+makeRandomMove rGen s@(cs@[c1, c2, c3, c4, _], pA, pB) n gameString = do
+    let ps   = shufflePieces rGen pA
+    let pc   = shuffleCards rGen [c1, c2]
     -- Choose move set
-    let ends         = makeMoveSet rGen (head pc)
+    let ends = makeMoveSet rGen (head pc)
     -- Check move is valid, if not try again.
     if isNothing (tryMove pc pc ends ps)
         then return gameString -- No move could be made
         else do
             let m = unPack (tryMove pc pc ends ps)
-            checkRandomMove (move s m pot)
+            checkRandomMove (move s m)
                             rGen
                             (n - 1)
-                            pot
                             (gameString ++ "\n" ++ show m)
     -- Make move and update state
 
@@ -47,17 +44,11 @@ makeRandomMove rGen s@(cs@[c1, c2, c3, c4, _], pA, pB) pot n gameString = do
 -- Left: A normal move was made.
 -- Right: A winning move was made.
 checkRandomMove
-    :: Maybe (Either State State)
-    -> StdGen
-    -> Int
-    -> PlayerOneTurn
-    -> String
-    -> IO String
-checkRandomMove (Just (Left _)) _ 0 _ gs = return gs -- n has reached 0
-checkRandomMove (Just (Left s)) rGen n pot gs =
-    makeRandomMove rGen s (not pot) n gs
-checkRandomMove (Just (Right s)) _ _ _ gs = return gs
-checkRandomMove Nothing          _ _ _ gs = return gs
+    :: Maybe (Either State State) -> StdGen -> Int -> String -> IO String
+checkRandomMove (Just (Left  _)) _    0 gs = return gs -- n has reached 0
+checkRandomMove (Just (Left  s)) rGen n gs = makeRandomMove rGen s n gs
+checkRandomMove (Just (Right s)) _    _ gs = return gs
+checkRandomMove Nothing          _    _ gs = return gs
 
 -- Tries to make a move with a given card.
 -- Cards in hand -> Cards to play -> Movesets for card -> Player pieces
@@ -67,14 +58,13 @@ tryMove hand c@[ca, cb] [] (p : ps) = -- No movesets left to try
     tryMove hand [cb] (getMoveSet cb) (p : ps)
 tryMove hand [_] [] (p : ps) = -- No cards left to try
     tryMove hand hand (getMoveSet (head hand)) ps
-tryMove hand c@(ca : cb) (e : es) (p : ps)
+tryMove hand c@(ca : cb) (e : es) pA@(p : ps)
     | -- Try all moveset
-      validMove hand (p, e, ca) = Just (p, e, ca)
-    | otherwise                 = tryMove hand c es (p : ps)
+      validMove hand (p, e, ca) pA = Just (p, e, ca)
+    | otherwise                    = tryMove hand c es pA
 
 
 
--- TODO: Lav den her
 shufflePieces :: StdGen -> Pieces -> Pieces
 shufflePieces rGen ps = map (ps !!) indexes
   where
