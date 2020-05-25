@@ -25,8 +25,6 @@ initialState rGen = do
 
 makeRandomMove :: StdGen -> State -> Int -> String -> IO String
 makeRandomMove rGen s@(cs@[c1, c2, _, _, _], pA, pB) n gameString = do
-    putStrLn $ "Calculating move: " ++ show n
-    putStrLn $ "Current state: " ++ show s
     let ps        = shufflePieces rGen pA
     let pc        = shuffleCards rGen [c1, c2]
     -- Choose move set
