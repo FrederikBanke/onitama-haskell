@@ -3,6 +3,7 @@ module Helper
     , isRight
     , randomRange
     , trd
+    , addTup
     )
 where
 
@@ -23,3 +24,6 @@ randomRange g n max = take n . nub $ randomRs (0, max) g
 
 trd :: (a, b, c) -> b
 trd (_, b, _) = b
+
+addTup :: (Num a) => (a, a) -> (a, a) -> (a, a)
+addTup (a, b) (x, y) = (a + x, b + y)

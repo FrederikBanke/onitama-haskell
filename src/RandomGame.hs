@@ -25,10 +25,12 @@ initialState rGen = do
 
 makeRandomMove :: StdGen -> State -> Int -> String -> IO String
 makeRandomMove rGen s@(cs@[c1, c2, _, _, _], pA, pB) n gameString = do
-    let ps       = shufflePieces rGen pA
-    let pc       = shuffleCards rGen [c1, c2]
+    putStrLn $ "Calculating move: " ++ show n
+    putStrLn $ "Current state: " ++ show s
+    let ps        = shufflePieces rGen pA
+    let pc        = shuffleCards rGen [c1, c2]
     -- Choose move set
-    let posToTry = makeMoveSet rGen (head pc)
+    let posToTry  = makeMoveSet rGen (head pc)
     let moveToTry = tryMove pc pA pc posToTry ps
     -- Check move is valid, if not try again.
     if isNothing moveToTry
@@ -49,19 +51,39 @@ checkRandomMove
 checkRandomMove (Just (Left  _)) _    0 gs = return gs -- n has reached 0
 checkRandomMove (Just (Left  s)) rGen n gs = makeRandomMove rGen s n gs
 checkRandomMove (Just (Right _)) _    _ gs = return gs
-checkRandomMove Nothing          _    _ gs = return gs
+checkRandomMove Nothing _ _ gs = return gs
+
+-- Function used for debugging
+tryMovePrint :: Cards -> Pieces -> Cards -> [Position] -> Pieces -> IO ()
+tryMovePrint _    _  _          _  []       = putStrLn "No move could be made" -- No pieces left to try
+    -- No movesets left to try
+tryMovePrint hand pA c@[ca, cb] [] (p : ps) = do
+    putStrLn "No more movesets, trying next card."
+    tryMovePrint hand pA [cb] (getMoveSet cb) (p : ps) --TODO: Det skal være random når man får moveset
+    -- No cards left to try
+tryMovePrint hand pA [_] [] (p : ps) = do
+    putStrLn "No more cards, trying next piece."
+    tryMovePrint hand pA hand (getMoveSet (head hand)) ps
+    -- Try all moveset
+tryMovePrint hand pA c@(ca : _) (e : es) (p : ps)
+    | validMove hand (p, addTup p e, ca) pA = print (p, addTup p e, ca)
+    | otherwise                    = do
+        putStrLn $ "Could not do move: " ++ show (p, addTup p e, ca)
+        tryMovePrint hand pA c es (p : ps)
 
 -- Tries to make a move with a given card.
 -- Cards in hand -> Player pieces-> Cards to play -> Movesets for card -> Pieces to try
 tryMove :: Cards -> Pieces -> Cards -> [Position] -> Pieces -> Maybe Move
 tryMove _ _ _ _ [] = Nothing -- No pieces left to try
-tryMove hand pA c@[ca, cb] [] (p : ps) = -- No movesets left to try
-    tryMove hand pA [cb] (getMoveSet cb) (p : ps)
-tryMove hand pA [_] [] (p : ps) = -- No cards left to try
+    -- No movesets left to try
+tryMove hand pA c@[ca, cb] [] (p : ps) =
+    tryMove hand pA [cb] (getMoveSet cb) (p : ps) --TODO: Det skal være random når man får moveset
+    -- No cards left to try
+tryMove hand pA [_] [] (p : ps) =
     tryMove hand pA hand (getMoveSet (head hand)) ps
-tryMove hand pA c@(ca : cb) (e : es) (p : ps)
-    | -- Try all moveset
-      validMove hand (p, e, ca) pA = Just (p, e, ca)
+    -- Try all moveset
+tryMove hand pA c@(ca : _) (e : es) (p : ps)
+    | validMove hand (p, addTup p e, ca) pA = Just (p, addTup p e, ca)
     | otherwise                    = tryMove hand pA c es (p : ps)
 
 
