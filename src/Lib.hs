@@ -25,7 +25,7 @@ type Game = (State, Moves)
 -- Takes an integer seed, an integer n, and outputs a string representing a game with n moves computed randomly.
 generateRandom :: Int -> Int -> IO (String)
 generateRandom seed n = do
-    -- initialize random generator with seed
+    -- Make a new state with a random deck of cards
     initState <- initialState . mkStdGen $ seed
     -- Make random move with generator
     makeRandomMove (mkStdGen seed) initState n (show initState)

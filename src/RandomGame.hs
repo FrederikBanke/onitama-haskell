@@ -24,16 +24,17 @@ initialState rGen = do
         )
 
 makeRandomMove :: StdGen -> State -> Int -> String -> IO String
-makeRandomMove rGen s@(cs@[c1, c2, c3, c4, _], pA, pB) n gameString = do
-    let ps   = shufflePieces rGen pA
-    let pc   = shuffleCards rGen [c1, c2]
+makeRandomMove rGen s@(cs@[c1, c2, _, _, _], pA, pB) n gameString = do
+    let ps       = shufflePieces rGen pA
+    let pc       = shuffleCards rGen [c1, c2]
     -- Choose move set
-    let ends = makeMoveSet rGen (head pc)
+    let posToTry = makeMoveSet rGen (head pc)
+    let moveToTry = tryMove pc pA pc posToTry ps
     -- Check move is valid, if not try again.
-    if isNothing (tryMove pc pc ends ps)
+    if isNothing moveToTry
         then return gameString -- No move could be made
         else do
-            let m = unPack (tryMove pc pc ends ps)
+            let m = unPack moveToTry
             checkRandomMove (move s m)
                             rGen
                             (n - 1)
@@ -47,21 +48,21 @@ checkRandomMove
     :: Maybe (Either State State) -> StdGen -> Int -> String -> IO String
 checkRandomMove (Just (Left  _)) _    0 gs = return gs -- n has reached 0
 checkRandomMove (Just (Left  s)) rGen n gs = makeRandomMove rGen s n gs
-checkRandomMove (Just (Right s)) _    _ gs = return gs
+checkRandomMove (Just (Right _)) _    _ gs = return gs
 checkRandomMove Nothing          _    _ gs = return gs
 
 -- Tries to make a move with a given card.
--- Cards in hand -> Cards to play -> Movesets for card -> Player pieces
-tryMove :: Cards -> Cards -> [Position] -> Pieces -> Maybe Move
-tryMove _ _ _ [] = Nothing -- No pieces left to try
-tryMove hand c@[ca, cb] [] (p : ps) = -- No movesets left to try
-    tryMove hand [cb] (getMoveSet cb) (p : ps)
-tryMove hand [_] [] (p : ps) = -- No cards left to try
-    tryMove hand hand (getMoveSet (head hand)) ps
-tryMove hand c@(ca : cb) (e : es) pA@(p : ps)
+-- Cards in hand -> Player pieces-> Cards to play -> Movesets for card -> Pieces to try
+tryMove :: Cards -> Pieces -> Cards -> [Position] -> Pieces -> Maybe Move
+tryMove _ _ _ _ [] = Nothing -- No pieces left to try
+tryMove hand pA c@[ca, cb] [] (p : ps) = -- No movesets left to try
+    tryMove hand pA [cb] (getMoveSet cb) (p : ps)
+tryMove hand pA [_] [] (p : ps) = -- No cards left to try
+    tryMove hand pA hand (getMoveSet (head hand)) ps
+tryMove hand pA c@(ca : cb) (e : es) (p : ps)
     | -- Try all moveset
       validMove hand (p, e, ca) pA = Just (p, e, ca)
-    | otherwise                    = tryMove hand c es pA
+    | otherwise                    = tryMove hand pA c es (p : ps)
 
 
 
