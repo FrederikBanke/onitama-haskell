@@ -18,6 +18,7 @@ import           RandomGame
 
 -- Checklist:
 -- TODO: Check om det første move er et winning move. Giver altid Left, måske det skal være Right?
+-- TODO: I random, så skal movesets genereres random hver gang.
 -- TODO: Lav tests
 
 type Game = (State, Moves)
@@ -46,7 +47,12 @@ isValid path = do
 hasWinningStrategy :: Int -> FilePath -> IO (String)
 -- Filepath is a the game state.
 -- Should return FirstPlayer if the first player has a winning strategy with less than n (Int) moves. None if none of the players has a winning move.
-hasWinningStrategy _ _ = return "Not yet implemented"
+hasWinningStrategy n path = do
+    handle <- openFile path ReadMode
+    contents <- hGetContents handle 
+    let initState = read $ head $ lines contents -- get first line
+    stdGen <- getStdGen
+    makeRandomMove stdGen initState n (show initState)
 
 -- Takes a list of strings.
 -- The first element is the intial state.
