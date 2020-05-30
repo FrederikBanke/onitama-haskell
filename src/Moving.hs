@@ -46,23 +46,13 @@ move curState@(cards@[c1,c2,_,_,_], pA, pB) m@(start, end, c)
                 (sortCards (switchCards cards c), movePiece pA m, pB)
     | otherwise = Nothing
 
--- move curState@(cards@[_, _, c3,c4,_], pA, pB) m@(start, end, c) pot@False
---     | validMove [c3,c4] m pB = case () of -- Nested if statements
---         ()
---             | isWinningMove (head pB) (head pA) start end
---             -> Just $ Right $ flipBoard (sortCards (switchCards cards c), [], movePiece pB m)
---             | otherwise
---             -> Just $ Left $ flipBoard $ checkRemove
---                 (sortCards (switchCards cards c), pA, movePiece pB m) pot
---     | otherwise = Nothing
-
 -- Remove overlapping pieces
 checkRemove :: State -> State
 checkRemove (cards, pA, pB) = (cards, pA, [ x | x <- pB, x `notElem` pA ]) -- Filter elements
 
 
 movePiece :: Pieces -> Move -> Pieces
-movePiece p (start, end, _) = map (\x -> if x == start then end else x) p -- Move element if it is equal to the start position. TODO: Maybe sort here
+movePiece p (start, end, _) = map (\x -> if x == start then end else x) p -- Move element if it is equal to the start position.
 
 -- Compare a move with every moveset for a card
 -- Makes sure that the player has the card being used

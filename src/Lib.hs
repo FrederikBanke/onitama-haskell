@@ -14,6 +14,7 @@ import           Cards
 import           Moving
 import           Helper
 import           RandomGame
+-- import           WinningStrategy
 
 
 -- Checklist:
@@ -34,7 +35,6 @@ generateRandom seed n = do
 
 -- Is the game valid
 isValid :: FilePath -> IO (String)
--- Valid: Output string of the final state: (Cards, PiecesA, PiecesB)
 isValid path = do
     handle   <- openFile path ReadMode
     contents <- hGetContents handle
@@ -47,12 +47,12 @@ isValid path = do
 hasWinningStrategy :: Int -> FilePath -> IO (String)
 -- Filepath is a the game state.
 -- Should return FirstPlayer if the first player has a winning strategy with less than n (Int) moves. None if none of the players has a winning move.
-hasWinningStrategy n path = do
-    handle <- openFile path ReadMode
-    contents <- hGetContents handle 
-    let initState = read $ head $ lines contents -- get first line
-    stdGen <- getStdGen
-    makeRandomMove stdGen initState n (show initState)
+-- hasWinningStrategy n path = do
+--     handle   <- openFile path ReadMode
+--     contents <- hGetContents handle
+--     let initState = read $ head $ lines contents -- get first line
+--     return $ unPack $ makeWinningMove initState n True
+hasWinningStrategy _ _ = return "Not implemented"
 
 -- Takes a list of strings.
 -- The first element is the intial state.
@@ -66,7 +66,7 @@ playGame :: Game -> String
 playGame (initState, []) = "ParsingError" -- If no moves, not a valid game.
 -- Go through and make each move.
 playGame (initState, moves) =
-    unPack $ checkMoves (Just $ Left initState) moves (head moves) -- Returns the final state
+    unPack $ checkMoves (move initState (head moves)) (tail moves) (head moves) -- Returns the final state
 
 -- Recursively makes the moves.
 -- Nothing: A nonvalid move was made.
@@ -75,7 +75,7 @@ playGame (initState, moves) =
 checkMoves :: Maybe (Either State State) -> Moves -> Move -> Maybe String
 checkMoves (Just (Left  s)) []       _  = Just $ show s -- Non winning move
 checkMoves (Just (Right s)) []       _  = Just $ show s -- Winning move
-checkMoves (Just (Left  s)) (m : ms) _  = checkMoves (move s m) ms m -- Normal move
+checkMoves (Just (Left  s)) (m : ms) _ = checkMoves (move s m) ms m -- Normal move
 checkMoves (Just (Right s)) (m : _ ) _  = Just $ "NonValid " ++ show m -- Moves after win
 checkMoves Nothing          _        lm = Just $ "NonValid " ++ show lm -- Invalid move
 

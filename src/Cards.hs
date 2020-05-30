@@ -56,7 +56,6 @@ getMoveSet name | name == "Boar"     = [(0, -1), (1, 0), (0, 1)]
                 | name == "Rabbit"   = [(-1, -1), (1, 1), (0, 2)]
                 | name == "Rooster"  = [(-1, -1), (0, -1), (0, 1), (1, 1)]
                 | name == "Tiger"    = [(2, 0), (-1, 0)]
-                | otherwise          = []
 
 -- Shuffle a deck of cards
 shuffleDeck :: StdGen -> IO [Card]
