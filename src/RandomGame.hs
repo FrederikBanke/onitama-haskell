@@ -17,6 +17,7 @@ import           Cards
 import           Moving
 import           Helper
 
+-- A default start for a game. A random deck will be assigned.
 initialState :: StdGen -> IO State
 initialState rGen = do
     cards <- shuffleDeck rGen
@@ -26,6 +27,7 @@ initialState rGen = do
         , [(4, 2), (4, 0), (4, 1), (4, 3), (4, 4)]
         )
 
+-- Make a random move by shuffling pieces and cards on hand.
 makeRandomMove :: StdGen -> State -> Int -> String -> IO String
 makeRandomMove rGen s@(cs@[c1, c2, _, _, _], pA, pB) n gameString = do
     let ps        = shufflePieces rGen pA
@@ -34,16 +36,9 @@ makeRandomMove rGen s@(cs@[c1, c2, _, _, _], pA, pB) n gameString = do
     let posToTry  = makeMoveSet rGen (head pc)
     let moveToTry = tryMove rGen pc pA pc posToTry ps
     -- Check move is valid, if not try again.
-    -- tryMovePrint rGen pc pA pc posToTry ps
-    if isNothing moveToTry
-        then return gameString -- No move could be made
-        else do
-            let m = unPack moveToTry
-            checkRandomMove (move s m)
-                            rGen
-                            (n - 1)
-                            (gameString ++ "\n" ++ show m)
+    let m         = unPack moveToTry
     -- Make move and update state
+    checkRandomMove (move s m) rGen (n - 1) (gameString ++ "\n" ++ show m)
 
 -- Recursively makes the moves.
 -- Left: A normal move was made.
@@ -54,13 +49,11 @@ checkRandomMove (Just (Left _)) _ 0 gs = return gs -- n has reached 0
 checkRandomMove (Just (Left s)) rGen n gs =
     makeRandomMove (snd (random rGen :: (Int, StdGen))) s n gs
 checkRandomMove (Just (Right _)) _ _ gs = return gs
--- checkRandomMove Nothing          _ _ gs = return gs
 
 -- Tries to make a move with a given card.
 -- Cards in hand -> Player pieces -> Cards to play -> Movesets for card -> Pieces to try
 tryMove
     :: StdGen -> Cards -> Pieces -> Cards -> [Position] -> Pieces -> Maybe Move
-tryMove _ _ _ _ _ [] = Nothing -- No pieces left to try
     -- No movesets left to try
 tryMove rGen hand pA c@[ca, cb] [] (p : ps) =
     tryMove rGen hand pA [cb] (makeMoveSet rGen cb) (p : ps) --TODO: Det skal være random når man får moveset
@@ -73,19 +66,20 @@ tryMove rGen hand pA c@(ca : _) (e : es) (p : ps)
     | otherwise                             = tryMove rGen hand pA c es (p : ps)
 
 
-
+-- Shuffle player pieces
 shufflePieces :: StdGen -> Pieces -> Pieces
 shufflePieces rGen ps = map (ps !!) indexes
   where
     indexes = randomRange rGen (length ps) n
     n       = length ps - 1
 
-
+-- Shuffle player cards
 shuffleCards :: StdGen -> Cards -> Cards
 shuffleCards rGen cs = map (cs !!) indexes
   where
     indexes = randomRange rGen 2 n
     n       = length cs - 1
+
 -- Make a list of possible end positions with a given card.
 -- It takes the moveset of a card, and shuffles it.
 makeMoveSet :: StdGen -> Card -> [Position]
