@@ -16,12 +16,6 @@ import           Helper
 import           RandomGame
 -- import           WinningStrategy
 
-
--- Checklist:
--- TODO: Check om det første move er et winning move. Giver altid Left, måske det skal være Right?
--- TODO: I random, så skal movesets genereres random hver gang.
--- TODO: Lav tests
-
 type Game = (State, Moves)
 
 -- Takes an integer seed, an integer n, and outputs a string representing a game with n moves computed randomly.

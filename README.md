@@ -34,6 +34,15 @@ If no moves are valid, it will try the next card with the same piece.
 When all cards and moves have been tried, it will try again with the next piece.
 When no pieces are left, it will stop generating the game and return where it got to.
 
+Every time a moves has been made, a new random generator will be used.
+The code for that is not that pretty
+
+```Haskell
+makeRandomMove (snd (random rGen :: (Int, StdGen))) s n gs
+```
+
+It uses the number representation of the earlier generator, and then it generates a random number, but that number is not used, only the generator that comes with it.
+
 
 ## isValid
 First a game is being parsed using the given file. The string input will be turned into a `Game`, where the first line of a file is the `State` and the rest of the lines are a list of moves to be made, `Moves`.

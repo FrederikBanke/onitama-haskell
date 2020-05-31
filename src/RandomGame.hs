@@ -56,7 +56,7 @@ tryMove
     :: StdGen -> Cards -> Pieces -> Cards -> [Position] -> Pieces -> Maybe Move
     -- No movesets left to try
 tryMove rGen hand pA c@[ca, cb] [] (p : ps) =
-    tryMove rGen hand pA [cb] (makeMoveSet rGen cb) (p : ps) --TODO: Det skal være random når man får moveset
+    tryMove rGen hand pA [cb] (makeMoveSet rGen cb) (p : ps)
     -- No cards left to try
 tryMove rGen hand pA [_] [] (p : ps) =
     tryMove rGen hand pA hand (makeMoveSet rGen (head hand)) ps
