@@ -1,0 +1,15 @@
+Haskell tests:
+
+generateRandom:
+
+
+
+isValid:
+Test 1: Invalid initial state. Unknown card.
+Test 2: Invalid initial state. Pieces before cards.
+Test 3: No winning move. Game just ends.
+Test 4: Winning by Way of the Stream
+Test 5: Winning by Way of the Stone
+Test 6: Moves after a winning move 
+Test 7: Invalid initial state. Piece not on board.
+Test 8: Invalid initial state. No moves present.
